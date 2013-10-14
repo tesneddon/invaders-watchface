@@ -74,7 +74,7 @@
 		  0x84, 0xFB, 0x2C, 0x73 }
 
 PBL_APP_INFO(MY_UUID,
-             "Invaders Watchapp", "Tim Sneddon",
+             "Space Invaders Watchface", "Tim Sneddon",
              1, 0, /* App version */
              DEFAULT_MENU_ICON,
              APP_INFO_WATCH_FACE);
@@ -150,7 +150,7 @@ void handle_init(AppContextRef ctx) {
     /*
     ** Configure date/time layer.
     */
-    text_layer_init(&date_layer, GRect(6, 96, 132, 24));
+    text_layer_init(&date_layer, GRect(6, 96, 132, 26));
     text_layer_set_background_color(&date_layer, GColorClear);
     text_layer_set_font(&date_layer,
     	    	    	fonts_get_system_font(FONT_KEY_GOTHIC_24));
@@ -158,7 +158,7 @@ void handle_init(AppContextRef ctx) {
     text_layer_set_text_alignment(&date_layer, GTextAlignmentCenter);
     layer_add_child(&window.layer, &date_layer.layer);
 
-    text_layer_init(&time_layer, GRect(0, 122, 144, 42));
+    text_layer_init(&time_layer, GRect(6, 120, 132, 40));
     text_layer_set_background_color(&time_layer, GColorClear);
     text_layer_set_font(&time_layer,
     	    	    	fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));

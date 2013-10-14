@@ -61,6 +61,8 @@
     void pbl_main(void *params);
     void handle_init(AppContextRef ctx);
     void handle_tick(AppContextRef ctx, PebbleTickEvent *event);
+    void handle_ship_animation_stopped(Animation *animation, bool finished,
+    	    	    	    	       void *context);
     void handle_deinit(AppContextRef ctx);
 
 /*
@@ -106,7 +108,7 @@ void handle_init(AppContextRef ctx) {
 
     PebbleTickEvent event;
     PblTm now;
-    GRect to_frame = GRect(-65, 45, 65, 28);
+    GRect to_frame = GRect(-65, 30, 65, 28);
 
     window_init(&window, "Invaders Watchface");
     window_stack_push(&window, true /* Animated */);
@@ -118,17 +120,17 @@ void handle_init(AppContextRef ctx) {
     ** Load the ship from resources and configure the animation.
     */
     heap_bitmap_init(&ship, RESOURCE_ID_SHIP);
-    bitmap_layer_init(&ship_layer, GRect(78, 45, 65, 28));
-    // hide the layer?
+    bitmap_layer_init(&ship_layer, GRect(144, 30, 65, 28));
+    bitmap_layer_set_bitmap(&ship_layer, &ship.bmp);
     layer_add_child(&window.layer, &ship_layer.layer);
 
     property_animation_init_layer_frame(&ship_animation, &ship_layer.layer,
     	    	    	    	    	NULL, &to_frame);
-
-    animation_set_duration(&ship_animation.animation, 50);
-
-    // setup callback for start so layer is unhidden
-    // setup callback for stop so we can enable the other
+    animation_set_duration(&ship_animation.animation, 1800);
+    animation_set_handlers(&ship_animation.animation,
+			   (AnimationHandlers) {
+			       .stopped = handle_ship_animation_stopped
+			   }, NULL);
 
     /*
     ** Load the invaders from resources and configure the layer.
@@ -200,8 +202,6 @@ void handle_tick(AppContextRef ctx,
     ** If we've ticked over a minute, then switch the invader animation.
     */
     if (event->units_changed & MINUTE_UNIT) {
-layer_set_hidden(&bmp_layer.layer, true);
-animation_schedule(&ship_animation.animation);
     	index = 0;
 	offset += 2;
     	if (offset >= sizeof(invaders)/sizeof(invaders[0])) {
@@ -215,17 +215,30 @@ animation_schedule(&ship_animation.animation);
     ** Update the invader animation.
     */
     if (event->units_changed & HOUR_UNIT) {
-    	// hide bmp_layer -- rename to invader_layer
-    	// schedule the animation
-    	//    -- the animation has a call back that then un-hides the
- 	//	 invader_layer.
+    	layer_set_hidden(&bmp_layer.layer, true);
+    	layer_set_hidden(&ship_layer.layer, false);
+    	animation_schedule(&ship_animation.animation);
     } else {
     	bitmap_layer_set_bitmap(&bmp_layer, &invaders[offset+index].bmp);
     }
 }
 
+void handle_ship_animation_stopped(Animation *animation,
+				   bool finished,
+				   void *data) {
+    /*
+    ** Re-enable the invader layer after the ship has passed.
+    */
+    layer_set_hidden(&bmp_layer.layer, false);
+}
+
 void handle_deinit(AppContextRef ctx) {
     unsigned i;
+
+    /*
+    ** Tidy up the ship.
+    */
+    heap_bitmap_deinit(&ship);
 
     /*
     ** Tidy up the invaders bitmaps.
@@ -233,7 +246,4 @@ void handle_deinit(AppContextRef ctx) {
     for (i = 0; i < sizeof(invaders)/sizeof(invaders[0]); i++) {
     	heap_bitmap_deinit(&invaders[i]);
     }
-
-    // don't forget stuff to do with animation.
-
 }

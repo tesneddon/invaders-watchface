@@ -1,0 +1,41 @@
+{
+    "friendlyVersion": "VERSION",
+    "versionDefName": "APP_RESOURCES",
+    "media": [
+    	{
+	    "type":"raw",
+	    "defName":"DUMMY",
+	    "file":"resource_map.json"
+    	},
+    	{
+	    "type":"png",
+	    "defName":"invadera1",
+	    "file":"images/invadera1.png"
+    	},
+    	{
+	    "type":"png",
+	    "defName":"invadera2",
+	    "file":"images/invadera2.png"
+    	},
+    	{
+	    "type":"png",
+	    "defName":"invaderb1",
+	    "file":"images/invaderb1.png"
+    	},
+    	{
+	    "type":"png",
+	    "defName":"invaderb2",
+	    "file":"images/invaderb2.png"
+    	},
+    	{
+	    "type":"png",
+	    "defName":"invaderc1",
+	    "file":"images/invaderc1.png"
+    	},
+    	{
+	    "type":"png",
+	    "defName":"invaderc2",
+	    "file":"images/invaderc2.png"
+    	},
+    ],
+}

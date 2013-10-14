@@ -74,7 +74,7 @@
 		  0x84, 0xFB, 0x2C, 0x73 }
 
 PBL_APP_INFO(MY_UUID,
-             "Space Invaders Watchface", "Tim Sneddon",
+             "Invaders Watchface", "Tim Sneddon",
              1, 0, /* App version */
              DEFAULT_MENU_ICON,
              APP_INFO_WATCH_FACE);

@@ -83,9 +83,10 @@ PBL_APP_INFO(MY_UUID,
 
     int index;
     unsigned offset;
-    HeapBitmap invaders[6];
-    BitmapLayer bmp_layer;
+    HeapBitmap invaders[6], ship;
+    BitmapLayer bmp_layer, ship_layer;
     TextLayer date_layer, time_layer;
+    PropertyAnimation ship_animation;
     Window window;
     char datetime[] = "";
 
@@ -105,16 +106,34 @@ void handle_init(AppContextRef ctx) {
 
     PebbleTickEvent event;
     PblTm now;
+    GRect to_frame = GRect(-65, 45, 65, 28);
 
     window_init(&window, "Invaders Watchface");
     window_stack_push(&window, true /* Animated */);
     window_set_background_color(&window, GColorBlack);
 
+    resource_init_current_app(&APP_RESOURCES);
+
+    /*
+    ** Load the ship from resources and configure the animation.
+    */
+    heap_bitmap_init(&ship, RESOURCE_ID_SHIP);
+    bitmap_layer_init(&ship_layer, GRect(78, 45, 65, 28));
+    // hide the layer?
+    layer_add_child(&window.layer, &ship_layer.layer);
+
+    property_animation_init_layer_frame(&ship_animation, &ship_layer.layer,
+    	    	    	    	    	NULL, &to_frame);
+
+    animation_set_duration(&ship_animation.animation, 50);
+
+    // setup callback for start so layer is unhidden
+    // setup callback for stop so we can enable the other
+
     /*
     ** Load the invaders from resources and configure the layer.
     */
     index = offset = 0;
-    resource_init_current_app(&APP_RESOURCES);
 
     heap_bitmap_init(&invaders[0], RESOURCE_ID_INVADER_A_1);
     heap_bitmap_init(&invaders[1], RESOURCE_ID_INVADER_A_2);
@@ -157,8 +176,8 @@ void handle_init(AppContextRef ctx) {
 void handle_tick(AppContextRef ctx,
     	    	 PebbleTickEvent *event) {
 
-    static char date_string[] = "14 Mar, 1983";
-    static char time_string[] = "11:15:00 pm";
+    static char date_string[] = "14 Mar, 1983"; /* Filled out with maximum */
+    static char time_string[] = "11:30:00 pm";  /* values for sizeof(). */
 
     /*
     ** Update the date, only if we have ticked over a day.
@@ -181,6 +200,8 @@ void handle_tick(AppContextRef ctx,
     ** If we've ticked over a minute, then switch the invader animation.
     */
     if (event->units_changed & MINUTE_UNIT) {
+layer_set_hidden(&bmp_layer.layer, true);
+animation_schedule(&ship_animation.animation);
     	index = 0;
 	offset += 2;
     	if (offset >= sizeof(invaders)/sizeof(invaders[0])) {
@@ -193,7 +214,14 @@ void handle_tick(AppContextRef ctx,
     /*
     ** Update the invader animation.
     */
-    bitmap_layer_set_bitmap(&bmp_layer, &invaders[offset+index].bmp);
+    if (event->units_changed & HOUR_UNIT) {
+    	// hide bmp_layer -- rename to invader_layer
+    	// schedule the animation
+    	//    -- the animation has a call back that then un-hides the
+ 	//	 invader_layer.
+    } else {
+    	bitmap_layer_set_bitmap(&bmp_layer, &invaders[offset+index].bmp);
+    }
 }
 
 void handle_deinit(AppContextRef ctx) {
@@ -205,4 +233,7 @@ void handle_deinit(AppContextRef ctx) {
     for (i = 0; i < sizeof(invaders)/sizeof(invaders[0]); i++) {
     	heap_bitmap_deinit(&invaders[i]);
     }
+
+    // don't forget stuff to do with animation.
+
 }

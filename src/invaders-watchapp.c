@@ -182,10 +182,9 @@ void handle_tick(AppContextRef ctx,
     */
     if (event->units_changed & MINUTE_UNIT) {
     	index = 0;
+	offset += 2;
     	if (offset >= sizeof(invaders)/sizeof(invaders[0])) {
     	    offset = 0;
-    	} else {
-	    offset += 2;
     	}
     } else {
     	index = abs(index - 1);

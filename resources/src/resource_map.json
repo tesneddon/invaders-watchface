@@ -31,6 +31,11 @@
 	    "type":"png",
 	    "defName":"INVADER_C_2",
 	    "file":"images/invaderc2.png"
+    	},
+    	{
+	    "type":"png",
+	    "defName":"SHIP",
+	    "file":"images/ship.png"
     	}
     ]
 }

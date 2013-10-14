@@ -3,39 +3,34 @@
     "versionDefName": "APP_RESOURCES",
     "media": [
     	{
-	    "type":"raw",
-	    "defName":"DUMMY",
-	    "file":"resource_map.json"
-    	},
-    	{
 	    "type":"png",
-	    "defName":"invadera1",
+	    "defName":"INVADER_A_1",
 	    "file":"images/invadera1.png"
     	},
     	{
 	    "type":"png",
-	    "defName":"invadera2",
+	    "defName":"INVADER_A_2",
 	    "file":"images/invadera2.png"
     	},
     	{
 	    "type":"png",
-	    "defName":"invaderb1",
+	    "defName":"INVADER_B_1",
 	    "file":"images/invaderb1.png"
     	},
     	{
 	    "type":"png",
-	    "defName":"invaderb2",
+	    "defName":"INVADER_B_2",
 	    "file":"images/invaderb2.png"
     	},
     	{
 	    "type":"png",
-	    "defName":"invaderc1",
+	    "defName":"INVADER_C_1",
 	    "file":"images/invaderc1.png"
     	},
     	{
 	    "type":"png",
-	    "defName":"invaderc2",
+	    "defName":"INVADER_C_2",
 	    "file":"images/invaderc2.png"
-    	},
-    ],
+    	}
+    ]
 }

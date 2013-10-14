@@ -167,7 +167,7 @@ void handle_init(AppContextRef ctx) {
     /*
     ** Set initial time...
     */
-    event.units_changed = -1;
+    event.units_changed = DAY_UNIT | SECOND_UNIT;
     event.tick_time = &now;
     get_time(&now);
     handle_tick(ctx, &event);

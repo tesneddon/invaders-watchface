@@ -59,15 +59,16 @@
 */
 
     void pbl_main(void *params);
-    void handle_init(AppContextRef *ctx);
-    void handle_tick(AppContextRef *ctx, PebbleTickEvent *event);
+    void handle_init(AppContextRef ctx);
+    void handle_tick(AppContextRef ctx, PebbleTickEvent *event);
+    void handle_deinit(AppContextRef ctx);
 
 /*
 ** Pebble Watchapp Identification
 */
-#define MY_UUID { 0x5C, 0x5A, 0x4F, 0x02,
-		  0xCA, 0x9C, 0x48, 0xF0,
-		  0xA8, 0xF4, 0x1C, 0x67,
+#define MY_UUID { 0x5C, 0x5A, 0x4F, 0x02, \
+		  0xCA, 0x9C, 0x48, 0xF0, \
+		  0xA8, 0xF4, 0x1C, 0x67, \
 		  0x84, 0xFB, 0x2C, 0x73 }
 
 PBL_APP_INFO(MY_UUID,
@@ -80,55 +81,129 @@ PBL_APP_INFO(MY_UUID,
 ** Global storage
 */
 
-    BmpContainer invaders[6];
+    int index;
+    unsigned offset;
+    HeapBitmap invaders[6];
+    BitmapLayer bmp_layer;
+    TextLayer date_layer, time_layer;
     Window window;
+    char datetime[] = "";
 
 void pbl_main(void *params) {
     PebbleAppHandlers handlers = {
-    	.init_handler = &handle_init
+    	.init_handler = &handle_init,
     	.tick_info = {
-    	    .tick_handler = &handle_tick,
-    	    .tick_units = SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT,
+    	    .tick_handler = handle_tick,
+    	    .tick_units = SECOND_UNIT | MINUTE_UNIT | HOUR_UNIT | DAY_UNIT,
     	},
-        .deinit_handler = &handle_deinit,
+        .deinit_handler = handle_deinit,
     };
     app_event_loop(params, &handlers);
 }
 
 void handle_init(AppContextRef ctx) {
 
-    window_init(&window, "Space Invaders");
+    PebbleTickEvent event;
+    PblTm now;
+
+    window_init(&window, "Invaders Watchface");
     window_stack_push(&window, true /* Animated */);
     window_set_background_color(&window, GColorBlack);
 
     /*
     ** Load the invaders from resources and configure the layer.
     */
+    index = offset = 0;
     resource_init_current_app(&APP_RESOURCES);
 
-    bmp_init_container(RESOURCE_ID_, &invaders[0]);
-    bmp_init_container(RESOURCE_ID_, &invaders[1]);
-    bmp_init_container(RESOURCE_ID_, &invaders[2]);
-    bmp_init_container(RESOURCE_ID_, &invaders[3]);
-    bmp_init_container(RESOURCE_ID_, &invaders[4]);
-    bmp_init_container(RESOURCE_ID_, &invaders[5]);
+    heap_bitmap_init(&invaders[0], RESOURCE_ID_INVADER_A_1);
+    heap_bitmap_init(&invaders[1], RESOURCE_ID_INVADER_A_2);
+    heap_bitmap_init(&invaders[2], RESOURCE_ID_INVADER_B_1);
+    heap_bitmap_init(&invaders[3], RESOURCE_ID_INVADER_B_2);
+    heap_bitmap_init(&invaders[4], RESOURCE_ID_INVADER_C_1);
+    heap_bitmap_init(&invaders[5], RESOURCE_ID_INVADER_C_2);
 
-    layer_init(&image, GRect(6, 6, 132, 96));
-    image.update_proc = &draw_invader;
-    layer_add_child(&window.layer, &image);
+    bitmap_layer_init(&bmp_layer, GRect(6, 0, 132, 96));
+    layer_add_child(&window.layer, &bmp_layer.layer);
+
+    /*
+    ** Configure date/time layer.
+    */
+    text_layer_init(&date_layer, GRect(6, 96, 132, 24));
+    text_layer_set_background_color(&date_layer, GColorClear);
+    text_layer_set_font(&date_layer,
+    	    	    	fonts_get_system_font(FONT_KEY_GOTHIC_24));
+    text_layer_set_text_color(&date_layer, GColorWhite);
+    text_layer_set_text_alignment(&date_layer, GTextAlignmentCenter);
+    layer_add_child(&window.layer, &date_layer.layer);
+
+    text_layer_init(&time_layer, GRect(0, 122, 144, 42));
+    text_layer_set_background_color(&time_layer, GColorClear);
+    text_layer_set_font(&time_layer,
+    	    	    	fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+    text_layer_set_text_color(&time_layer, GColorWhite);
+    text_layer_set_text_alignment(&time_layer, GTextAlignmentCenter);
+    layer_add_child(&window.layer, &time_layer.layer);
+
+    /*
+    ** Set initial time...
+    */
+    event.units_changed = -1;
+    event.tick_time = &now;
+    get_time(&now);
+    handle_tick(ctx, &event);
 }
 
-void handle_tick(AppContextRef *ctx,
+void handle_tick(AppContextRef ctx,
     	    	 PebbleTickEvent *event) {
 
-    // what is a 
+    static char date_string[] = "14 Mar, 1983";
+    static char time_string[] = "11:15:00 pm";
 
+    /*
+    ** Update the date, only if we have ticked over a day.
+    */
+    if (event->units_changed & DAY_UNIT) {
+    	string_format_time(date_string, sizeof(date_string), "%e %b, %Y",
+    	    	    	   event->tick_time);
+    	text_layer_set_text(&date_layer, date_string);
+    }
+
+    /*
+    ** Update the time.
+    */
+    string_format_time(time_string, sizeof(time_string),
+		       (clock_is_24h_style() ? "%k:%M:%S" : "%I:%M:%S %P"),
+    	    	       event->tick_time);
+    text_layer_set_text(&time_layer, time_string);
+
+    /*
+    ** If we've ticked over a minute, then switch the invader animation.
+    */
+    if (event->units_changed & MINUTE_UNIT) {
+    	index = 0;
+    	if (offset >= sizeof(invaders)/sizeof(invaders[0])) {
+    	    offset = 0;
+    	} else {
+	    offset += 2;
+    	}
+    } else {
+    	index = abs(index - 1);
+    }
+
+    /*
+    ** Update the invader animation.
+    */
+    bitmap_layer_set_bitmap(&bmp_layer, &invaders[offset+index].bmp);
 }
 
 void handle_deinit(AppContextRef ctx) {
-    char i;
+    unsigned i;
 
-    for (i = 0; i < sizeof(invaders/invaders[0]); i++) {
-    	bmp_deinit_container(&invaders[i]);
+    /*
+    ** Tidy up the invaders bitmaps.
+    */
+    for (i = 0; i < sizeof(invaders)/sizeof(invaders[0]); i++) {
+    	heap_bitmap_deinit(&invaders[i]);
     }
 }

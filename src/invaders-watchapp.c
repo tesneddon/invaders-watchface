@@ -86,7 +86,7 @@ PBL_APP_INFO(MY_UUID,
     int index;
     unsigned offset;
     HeapBitmap invaders[6], ship;
-    BitmapLayer bmp_layer, ship_layer;
+    BitmapLayer invader_layer, ship_layer;
     TextLayer date_layer, time_layer;
     PropertyAnimation ship_animation;
     Window window;
@@ -144,8 +144,8 @@ void handle_init(AppContextRef ctx) {
     heap_bitmap_init(&invaders[4], RESOURCE_ID_INVADER_C_1);
     heap_bitmap_init(&invaders[5], RESOURCE_ID_INVADER_C_2);
 
-    bitmap_layer_init(&bmp_layer, GRect(6, 0, 132, 96));
-    layer_add_child(&window.layer, &bmp_layer.layer);
+    bitmap_layer_init(&invader_layer, GRect(6, 0, 132, 96));
+    layer_add_child(&window.layer, &invader_layer.layer);
 
     /*
     ** Configure date/time layer.
@@ -215,11 +215,11 @@ void handle_tick(AppContextRef ctx,
     ** Update the invader animation.
     */
     if (event->units_changed & HOUR_UNIT) {
-    	layer_set_hidden(&bmp_layer.layer, true);
+    	layer_set_hidden(&invader_layer.layer, true);
     	layer_set_hidden(&ship_layer.layer, false);
     	animation_schedule(&ship_animation.animation);
     } else {
-    	bitmap_layer_set_bitmap(&bmp_layer, &invaders[offset+index].bmp);
+    	bitmap_layer_set_bitmap(&invader_layer, &invaders[offset+index].bmp);
     }
 }
 
@@ -229,7 +229,7 @@ void handle_ship_animation_stopped(Animation *animation,
     /*
     ** Re-enable the invader layer after the ship has passed.
     */
-    layer_set_hidden(&bmp_layer.layer, false);
+    layer_set_hidden(&invader_layer.layer, false);
 }
 
 void handle_deinit(AppContextRef ctx) {

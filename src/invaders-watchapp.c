@@ -48,7 +48,8 @@
 **  MODIFICATION HISTORY:
 **
 **      14-OCT-2013 V1.0    Sneddon     Initial coding.
-**      17-OCT-2013 V1.1    Sneddon     Increment version.
+**      17-OCT-2013 V1.1    Sneddon     Increment version.  Remove unnecessary
+**					declaration.
 **--
 */
 #include "pebble_os.h"
@@ -91,7 +92,6 @@ PBL_APP_INFO(MY_UUID,
     TextLayer date_layer, time_layer;
     PropertyAnimation ship_animation;
     Window window;
-    char datetime[] = "";
 
 void pbl_main(void *params) {
     PebbleAppHandlers handlers = {

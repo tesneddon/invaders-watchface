@@ -48,6 +48,7 @@
 **  MODIFICATION HISTORY:
 **
 **      14-OCT-2013 V1.0    Sneddon     Initial coding.
+**      17-OCT-2013 V1.1    Sneddon     Increment version.
 **--
 */
 #include "pebble_os.h"
@@ -75,7 +76,7 @@
 
 PBL_APP_INFO(MY_UUID,
              "Invaders Watchface", "Tim Sneddon",
-             1, 0, /* App version */
+             1, 1, /* App version */
              DEFAULT_MENU_ICON,
              APP_INFO_WATCH_FACE);
 
